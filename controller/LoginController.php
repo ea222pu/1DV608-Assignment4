@@ -17,7 +17,12 @@ class LoginController implements iController {
 	}
 
 	public function listen() {
-		if($this->logView->isCookieNameSet())
+		if($this->logView->isRegisteredCookieSet()) {
+			$this->logView->setMessage(9);
+			$this->logView->deleteRegisteredCookie();
+		}
+
+		if($this->logView->isCookieNameSet()) 
 			$this->logView->setLoginName($this->logView->getCookieName());
 
 		//Login

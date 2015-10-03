@@ -6,7 +6,7 @@ session_start();
 class LoginModel {
 
     private static $loggedIn = 'LoginModel::LoggedIn';
-    private $userList;
+    private $dal;
 
     private $message = 0;
 
@@ -15,8 +15,8 @@ class LoginModel {
     *
     * @param UserList
     */
-    public function __construct(UserList $userList) {
-        $this->userList = $userList;
+    public function __construct(UserDAL $userDAL) {
+        $this->dal = $userDAL;
     }
 
     /**
@@ -36,12 +36,12 @@ class LoginModel {
             return false;
         }
         else {
-            if(!$this->userList->findUserByUsername($username)) {
+            if(!$this->dal->findUserByUsername($username)) {
                 $this->message = 5;
                 return false;
             }
             else {
-                $user = $this->userList->findUserByUsername($username);
+                $user = $this->dal->findUserByUsername($username);
                 if($user->getPassword() == $password) {
                     if(!$persistentLogin)
                         $this->message = 1;
@@ -60,12 +60,12 @@ class LoginModel {
     }
 
     public function verifyPersistentLogin($cookieName, $cookiePassword) {
-        if(!$this->userList->findUserByUsername($cookieName)) {
+        if(!$this->dal->findUserByUsername($cookieName)) {
             $this->message = 5;
             return false;
         }
         else {
-            $user = $this->userList->findUserByUsername($cookieName);
+            $user = $this->dal->findUserByUsername($cookieName);
             if(base64_encode($user->getPassword()) == $cookiePassword) {
                 $this->message = 7;
                 if(!isset($_SESSION[self::$loggedIn]))

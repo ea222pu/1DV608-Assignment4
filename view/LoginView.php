@@ -199,10 +199,19 @@ class LoginView implements iView {
 		return false;
 	}
 
+	public function isRegisteredCookieSet() {
+		return isset($_COOKIE[RegisterView::$successfulRegister]);
+	}
+
+	public function deleteRegisteredCookie() {
+		setcookie(RegisterView::$successfulRegister, "", time()-3600);
+	}
+
 	public function deleteCredentialCookies() {
 		if(isset($_COOKIE[self::$cookieName]))
 			setcookie(self::$cookieName, "", time()-3600);
 		if(isset($_COOKIE[self::$cookiePassword]))
 			setcookie(self::$cookiePassword, "", time()-3600);
+		$this->rememberName = '';
 	}
 }

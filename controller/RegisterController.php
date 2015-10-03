@@ -22,19 +22,15 @@ class RegisterController implements iController {
 		if($this->regView->registerButtonPost()) {
 			if($this->ctrlrRegister()) {
 				$this->logView->setCookieUsername($this->regView->getUsername());
-				$this->logView->setMessage($this->regModel->getMessage());
-				//$this->layView->render(false, $this->logView, $this->dtView);
-				return true;
+				$this->regView->redirectToLogin();
 			}
 			else {
 				$this->regView->setMessage($this->regModel->getMessage());
 				$this->layView->render(false, $this->regView, $this->dtView);
-				return false;
 			}
 		}
 		else {
 			$this->layView->render(false, $this->regView, $this->dtView);
-			return false;
 		}
 	}
 

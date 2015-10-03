@@ -16,10 +16,7 @@ class MainController implements iController {
 
 	public function listen() {
 		if($this->layView->registerLinkPressed()) {
-			if($this->regCtrlr->listen())
-				$this->logCtrlr->listen();
-			else
-				return;
+			$this->regCtrlr->listen();
 		}
 		else {
 			$this->logCtrlr->listen();
