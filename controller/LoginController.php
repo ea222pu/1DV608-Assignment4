@@ -18,7 +18,7 @@ class LoginController implements iController {
 
 	public function listen() {
 		if($this->logView->isRegisteredCookieSet()) {
-			$this->logView->setMessage(9);
+			$this->logView->registrationMessage();
 			$this->logView->deleteRegisteredCookie();
 		}
 
@@ -27,45 +27,23 @@ class LoginController implements iController {
 
 		//Login
 		if($this->logView->loginButtonPost() && !$this->logModel->isLoggedIn())
-			$this->ctrlrLogin();
+			$this->logView->loginUser();
 
 		//Logout
-		else if($this->logView->logoutButtonPost() && $this->logModel->isLoggedIn())
-			$this->ctrlrLogout();
+		else if($this->logView->logoutButtonPost() && $this->logModel->isLoggedIn()) {
+			$this->logModel->logout();
+			$this->logView->deleteCredentialCookies();
+		}
 
-		else if($this->logModel->isLoggedIn() && $_POST) {
+		else if($_POST) {
 			header('Location: ' . $_SERVER['REQUEST_URI']);
 			exit;
 		}
 		else if($this->logView->isCookiesSet())
-			$this->ctrlrCookieLogin();
+			$this->logView->persistentLogin();
 
 		$this->layView->render($this->logModel->isLoggedIn(), $this->logView, $this->dtView);
 
 	}
-
-	private function ctrlrLogin() {
-		$username = $this->logView->getUsername();
-		$password = $this->logView->getPassword();
-		$persistentLogin = $this->logView->getPersistentLogin();
-
-		$this->logModel->verifyLoginCredentials($username, $password, $persistentLogin);
-		$this->logView->setMessage($this->logModel->getMessage());
-	}
-
-	private function ctrlrCookieLogin() {
-		$cookieName = $this->logView->getCookieName();
-		$cookiePassword = $this->logView->getCookiePassword();
-
-		$this->logModel->verifyPersistentLogin($cookieName, $cookiePassword);
-		if(!$this->logModel->isLoggedIn())
-			$this->logView->deleteCredentialCookies();
-		$this->logView->setMessage($this->logModel->getMessage());
-	}
-
-	private function ctrlrLogout() {
-		$this->logModel->logout();
-		$this->logView->setMessage($this->logModel->getMessage());
-		$this->logView->deleteCredentialCookies();
-	}
+	
 }

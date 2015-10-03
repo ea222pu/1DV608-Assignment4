@@ -12,7 +12,7 @@ class LoginView implements iView {
 	private static $keep = 'LoginView::KeepMeLoggedIn';
 	private static $messageId = 'LoginView::Message';
 	private $rememberName = '';
-	private $lm;
+	private $logModel;
 	private $message = '';
 
 	/**
@@ -20,8 +20,8 @@ class LoginView implements iView {
 	*
 	* @param LoginModel
 	*/
-	public function __construct(LoginModel $lm) {
-		$this->lm = $lm;
+	public function __construct(LoginModel $loginModel) {
+		$this->logModel = $loginModel;
 	}
 
 	/**
@@ -34,7 +34,7 @@ class LoginView implements iView {
 	public function response() {
 		$response = '';
 
-		if($this->lm->isLoggedIn())
+		if($this->logModel->isLoggedIn())
 			$response = $this->generateLogoutButtonHTML($this->message);
 		else
 			$response = $this->generateLoginFormHTML($this->message);
@@ -82,58 +82,45 @@ class LoginView implements iView {
 		';
 	}
 
-	/**
-	* Set message to be displayed
-	*
-	* @param Int
-	*/
-	public function setMessage($n) {
-		switch($n) {
-			case 0:
-				$this->message = '';
-				break;
-			case 1:
+	public function loginUser() {
+		$username = $_POST[self::$name];
+		$password = $_POST[self::$password];
+		$persistentLogin = isset($_POST[self::$keep]);
+		try {
+			$this->logModel->verifyLoginCredentials($username, $password, $persistentLogin);
+			if(!$persistentLogin)
 				$this->message = 'Welcome';
-				break;
-			case 2:
-				$this->message = 'Bye bye!';
-				break;
-			case 3:
-				$this->message = 'Username is missing';
-				break;
-			case 4:
-				$this->message = 'Password is missing';
-				break;
-			case 5:
-				$this->message = 'Wrong name or password';
-				break;
-			case 6:
+			else
 				$this->message = 'Welcome and you will be remembered';
-				break;
-			case 7:
-				$this->message = 'Welcome back with cookie';
-				break;
-			case 8:
-				$this->message = 'Wrong information in cookies';
-				break;
-			case 9:
-				$this->message = 'Registered new user.';
-				break;
+		} catch(LUsernameMissingException $e) {
+			$this->message = 'Username is missing';
+		} catch(LPasswordMissingException $e) {
+			$this->message = 'Password is missing';
+		} catch(LUsernameOrPasswordException $e) {
+			$this->message = 'Wrong name or password';
 		}
 	}
 
-	/**
-	* @return String
-	*/
-	public function getUsername() {
-		return $_POST[self::$name];
+	public function persistentLogin() {
+		$cookieName = $_COOKIE[self::$cookieName];
+		$cookiePassword = $_COOKIE[self::$cookiePassword];
+
+		try {
+			$this->logModel->verifyPersistentLogin($cookieName, $cookiePassword);
+			if(!$this->logModel->isLoggedIn()) {
+				$this->message = 'Wrong information in coolies';
+				$this->deleteCredentialCookies();
+			}
+			else
+				$this->message = 'Welcome back with cookie';
+		} catch(LWrongCookieInformationException $e) {
+			$this->deleteCredentialCookies();
+			$this->message = 'Wrong information in cookies';
+		}
 	}
 
-	/**
-	* @return String
-	*/
-	public function getPassword() {
-		return $_POST[self::$password];
+	public function registrationMessage() {
+		$this->message = 'Registered new user.';
 	}
 
 	public function getCookieName() {
@@ -142,15 +129,6 @@ class LoginView implements iView {
 
 	public function getCookiePassword() {
 		return $_COOKIE[self::$cookiePassword];
-	}
-
-	/**
-	* @return boolean
-	*/
-	public function getPersistentLogin() {
-		if(isset($_POST[self::$keep]))
-			return true;
-		return false;
 	}
 
 	public function isCookiesSet() {
@@ -194,6 +172,7 @@ class LoginView implements iView {
 	*/
 	public function logoutButtonPost() {
 		if(isset($_POST[self::$logout])) {
+			$this->message = 'Bye bye!';
 			return true;
 		}
 		return false;

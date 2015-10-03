@@ -20,12 +20,11 @@ class RegisterController implements iController {
 
 	public function listen() {
 		if($this->regView->registerButtonPost()) {
-			if($this->ctrlrRegister()) {
+			if($this->regView->registerUser()) {
 				$this->logView->setCookieUsername($this->regView->getUsername());
 				$this->regView->redirectToLogin();
 			}
 			else {
-				$this->regView->setMessage($this->regModel->getMessage());
 				$this->layView->render(false, $this->regView, $this->dtView);
 			}
 		}
@@ -34,11 +33,4 @@ class RegisterController implements iController {
 		}
 	}
 
-	public function ctrlrRegister() {
-		$username = $this->regView->getUsername();
-		$password = $this->regView->getPassword();
-		$passwordRepeat = $this->regView->getPasswordRepeat();
-
-		return $this->regModel->verifyRegisterCredentials($username, $password, $passwordRepeat);
-	}
 }

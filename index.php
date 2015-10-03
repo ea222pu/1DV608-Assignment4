@@ -26,18 +26,18 @@ if(mysqli_connect_errno()) {
 
 //Create models
 $dal = new UserDAL($mysqli);
-$model = new LoginModel($dal);
-$rm = new RegisterModel($dal);
+$loginModel = new LoginModel($dal);
+$registerModel = new RegisterModel($dal);
 
 //CREATE OBJECTS OF THE VIEWS
-$v = new LoginView($model);
-$dtv = new DateTimeView();
-$lv = new LayoutView();
-$r = new RegisterView();
+$loginView = new LoginView($loginModel);
+$registerView = new RegisterView($registerModel);
+$dateTimeView = new DateTimeView();
+$layoutView = new LayoutView();
 
 //Create controller
-$loginController = new LoginController($lv, $v, $dtv, $model);
-$registerController = new RegisterController($lv, $r, $v, $dtv, $rm);
-$mainController = new MainController($registerController, $loginController, $lv);
+$loginController = new LoginController($layoutView, $loginView, $dateTimeView, $loginModel);
+$registerController = new RegisterController($layoutView, $registerView, $loginView, $dateTimeView, $registerModel);
+$mainController = new MainController($registerController, $loginController, $layoutView);
 
 $mainController->listen();

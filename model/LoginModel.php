@@ -1,5 +1,10 @@
 <?php
 
+require_once('exceptions/LPasswordMissingException.php');
+require_once('exceptions/LUsernameMissingException.php');
+require_once('exceptions/LUsernameOrPasswordException.php');
+require_once('exceptions/LWrongCookieInformationException.php');
+
 //Initialize session
 session_start();
 
@@ -26,56 +31,42 @@ class LoginModel {
     * @return boolean
     */
     public function verifyLoginCredentials($username, $password, $persistentLogin) {
-        if(empty($username)) {
-            $this->message = 3;
-            return false;
-        }
+        if(empty($username))
+            throw new LUsernameMissingException();
 
-        else if(empty($password)) {
-            $this->message = 4;
-            return false;
-        }
+        else if(empty($password))
+            throw new LPasswordMissingException();
+
         else {
-            if(!$this->dal->findUserByUsername($username)) {
-                $this->message = 5;
-                return false;
-            }
+            if(!$this->dal->findUserByUsername($username))
+                throw new LUsernameOrPasswordException();
+
             else {
                 $user = $this->dal->findUserByUsername($username);
                 if($user->getPassword() == $password) {
-                    if(!$persistentLogin)
-                        $this->message = 1;
-                    else
-                        $this->message = 6;
                     if(!isset($_SESSION[self::$loggedIn]))
                         $_SESSION[self::$loggedIn] = true;
                     return true;
                 }
-                else {
-                    $this->message = 5;
-                    return false;
-                }
+                else
+                    throw new LUsernameOrPasswordException();
             }
         }
     }
 
     public function verifyPersistentLogin($cookieName, $cookiePassword) {
-        if(!$this->dal->findUserByUsername($cookieName)) {
-            $this->message = 5;
-            return false;
-        }
+        if(!$this->dal->findUserByUsername($cookieName))
+            throw new LWrongCookieInformation();
+
         else {
             $user = $this->dal->findUserByUsername($cookieName);
             if(base64_encode($user->getPassword()) == $cookiePassword) {
-                $this->message = 7;
                 if(!isset($_SESSION[self::$loggedIn]))
                     $_SESSION[self::$loggedIn] = true;
                 return true;
             }
-            else {
-                $this->message = 8;
-                return false;
-            }
+            else
+                throw new LWrongCookieInformationException();
         }
     }
 
@@ -86,7 +77,6 @@ class LoginModel {
         if(isset($_SESSION[self::$loggedIn]))
             if($_SESSION[self::$loggedIn])
                 $_SESSION[self::$loggedIn] = false;
-        $this->message = 2;
         session_destroy();
     }
 
@@ -99,11 +89,5 @@ class LoginModel {
                 return true;
         return false;
     }
-
-    /**
-    * @return Int Integer representing a message
-    */
-    public function getMessage() {
-        return $this->message;
-    }
+    
 }

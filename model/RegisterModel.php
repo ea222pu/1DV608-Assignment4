@@ -1,4 +1,10 @@
 <?php
+require_once('exceptions/RUsernameAndPasswordLengthException.php');
+require_once('exceptions/RPasswordLengthException.php');
+require_once('exceptions/RUsernameLengthException.php');
+require_once('exceptions/RPasswordMismatchException.php');
+require_once('exceptions/RUserExistsException.php');
+require_once('exceptions/RInvalidCharactersException.php');
 
 class RegisterModel {
 
@@ -12,39 +18,28 @@ class RegisterModel {
 
 	public function verifyRegisterCredentials($username, $password, $passwordRepeat) {
 		if(strlen($username) < 3 && strlen($password) < 6) {
-			$this->message = 1;
-			return false;
+			throw new RUsernameAndPasswordLengthException();
 		}
 		else if(strlen($password) < 6) {
-			$this->message = 2;
-			return false;
+			throw new RPasswordLengthException();
 		}
 		else if(strlen($username) < 3) {
-			$this->message = 3;
-			return false;
+			throw new RUsernameLengthException();
 		}
 		else if($password !== $passwordRepeat) {
-			$this->message = 4;
-			return false;
+			throw new RPasswordMismatchException();
 		}
 		else if($this->dal->findUserByUsername($username)) {
-			$this->message = 5;
-			return false;
+			throw new RUserExistsException();
 		}
 		else if(preg_match("/^[0-9A-Za-z_]+$/", $username) == 0) {
-			$this->message = 6;
-			return false;
+			throw new RInvalidCharactersException();
 		}
 		else {
 			$user = new User($username, $password);
 			$this->dal->add($user);
-			$this->message = 9;
 			return true;
 		}
-	}
-
-	public function getMessage() {
-		return $this->message;
 	}
 
 }

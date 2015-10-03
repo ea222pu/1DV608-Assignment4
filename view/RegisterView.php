@@ -1,5 +1,7 @@
 <?php
 
+require_once("view/iView.php");
+
 class RegisterView implements iView {
 
     private static $register = 'RegisterView::Register';
@@ -10,6 +12,11 @@ class RegisterView implements iView {
     public static $successfulRegister = 'RegisterView::SuccessfulRegister';
     private $rememberName;
     private $message;
+    private $regModel;
+
+    public function __construct(RegisterModel $registerModel) {
+        $this->regModel = $registerModel;
+    }
 
     public function response() {
         return '
@@ -40,44 +47,33 @@ class RegisterView implements iView {
         return isset($_POST[self::$register]);
     }
 
+    
     public function getUsername() {
         return $_POST[self::$name];
     }
+    
+    public function registerUser() {
+        $username = $_POST[self::$name];
+        $password = $_POST[self::$password];
+        $passwordRepeat = $_POST[self::$passwordRepeat];
 
-    public function getPassword() {
-        return $_POST[self::$password];
-    }
-
-    public function getPasswordRepeat() {
-        return $_POST[self::$passwordRepeat];
-    }
-
-    public function setMessage($n) {
-        switch($n) {
-            case 0:
-                $this->message = '';
-                break;
-            case 1:
-                $this->message = 'Username has too few characters, at least 3 characters.
-                                <br>Password has too few characters, at least 6 characters.';
-                break;
-            case 2:
-                $this->message =  'Password has too few characters, at least 6 characters.';
-                break;
-            case 3:
-                $this->message = 'Username has too few characters, at least 3 characters.';
-                break;
-            case 4:
-                $this->message = 'Passwords do not match.';
-                break;
-            case 5:
-                $this->message = 'User exists, pick another username.';
-                break;
-            case 6:
-                $this->message = 'Username contains invalid characters.';
-                break;
+        try {
+            return $this->regModel->verifyRegisterCredentials($username, $password, $passwordRepeat);
+        } catch(RUsernameAndPasswordLengthException $e) {
+            $this->message = 'Username has too few characters, at least 3 characters.
+                            <br>Password has too few characters, at least 6 characters.';
+        } catch(RPasswordLengthException $e) {
+            $this->message =  'Password has too few characters, at least 6 characters.';
+        } catch(RUsernameLengthException $e) {
+            $this->message = 'Username has too few characters, at least 3 characters.';
+        } catch(RPasswordMismatchException $e) {
+            $this->message = 'Passwords do not match.';
+        } catch(RUserExistsException $e) {
+            $this->message = 'User exists, pick another username.';
+        } catch(RInvalidCharactersException $e) {
+            $this->message = 'Username contains invalid characters.';
         }
-
+        return false;
     }
 
     public function redirectToLogin() {

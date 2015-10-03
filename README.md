@@ -10,8 +10,7 @@ https://github.com/dntoll/1DV608/blob/master/Assignments/Assignment_4/UC4.md
 https://github.com/dntoll/1DV608/blob/master/Assignments/Assignment_4/TestCases.md  
 
 ## TODO
-Refactoring.  
-Exception stuff.  
+Comments  
 
 ## Live demo
 http://ea222pua4.comyr.com/
