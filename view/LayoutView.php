@@ -2,8 +2,6 @@
 
 class LayoutView {
 
-	private $register = "register";
-
 	public function render($isLoggedIn, iView $v, DateTimeView $dtv) {
 		echo '<!DOCTYPE html>
 			<html>
@@ -34,17 +32,23 @@ class LayoutView {
 		}
 	}
 
+	/**
+	 * Renders correct link based on what view is displayed to the user.
+	 * 
+	 * @param  boolean $isLoggedIn
+	 * @param  \view\iView $v 	  \view\LoginView or \view\RegisterView
+	 * @return String | null      Correct link based on $v, else null.      
+	 */
 	private function renderRegisterLink($isLoggedIn, $v) {
-		if(!$isLoggedIn && $v instanceof LoginView)
-			return "<a href='?" . $this->register . "'>Register a new user</a>";
-		else if($v instanceof RegisterView)
-			return "<a href='?'>Back to login</a>";
-		else
+		if(!$isLoggedIn && $v instanceof LoginView) {
+			return $v->generateRegisterLink();
+		}
+		else if($v instanceof RegisterView) {
+			return $v->generateBackToLoginLink();
+		}
+		else {
 			return null;
-	}
-
-	public function registerLinkPressed() {
-		return isset($_GET[$this->register]);
+		}
 	}
 
 }

@@ -3,14 +3,11 @@ Repository for 1DV608 assignment 4
 Author: Emil Axelsson  
 Contact: ea222pu@student.lnu.se  
 
-## Requirements
+### Use cases
 https://github.com/dntoll/1DV608/blob/master/Assignments/Assignment_4/UC4.md  
 
-## Test cases
+### Test cases
 https://github.com/dntoll/1DV608/blob/master/Assignments/Assignment_4/TestCases.md  
 
-## TODO
-Comments  
-
-## Live demo
+### Live demo
 http://ea222pua4.comyr.com/

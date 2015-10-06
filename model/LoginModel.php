@@ -10,83 +10,110 @@ session_start();
 
 class LoginModel {
 
+    /**
+     * @var string $loggedIn
+     */
     private static $loggedIn = 'LoginModel::LoggedIn';
-    private $dal;
 
-    private $message = 0;
+    /**
+     * @var \model\UserDAL $dal
+     */
+    private $dal;
 
     /**
     * Constructor
-    *
-    * @param UserList
+    * @param \model\UserDAL $userList
     */
     public function __construct(UserDAL $userDAL) {
         $this->dal = $userDAL;
     }
 
     /**
-    * @param String $username
-    * @param String $password
-    * @param boolean $persistentLogin
-    * @return boolean
-    */
+     * Verifies login data from user.
+     * 
+     * @param  String $username            Input username
+     * @param  String $password            Input password
+     * @param  boolean $persistentLogin    Keep me logged in
+     *
+     * @throws LUsernameMissingException   When $username is empty.
+     * @throws LPasswordMissingException   When $password is empty.
+     * @throws LUsernameOrPasswordException  When user does not exist in database, or if user exist 
+     *                                       but password does not match.
+     */
     public function verifyLoginCredentials($username, $password, $persistentLogin) {
-        if(empty($username))
+        if(empty($username)) {
             throw new LUsernameMissingException();
-
-        else if(empty($password))
+        }
+        else if(empty($password)) {
             throw new LPasswordMissingException();
-
+        }
         else {
-            if(!$this->dal->findUserByUsername($username))
+            if(!$this->dal->findUserByUsername($username)) {
                 throw new LUsernameOrPasswordException();
-
+            }
             else {
                 $user = $this->dal->findUserByUsername($username);
                 if($user->getPassword() == $password) {
-                    if(!isset($_SESSION[self::$loggedIn]))
+                    if(!isset($_SESSION[self::$loggedIn])) {
                         $_SESSION[self::$loggedIn] = true;
-                    return true;
+                    }
                 }
-                else
+                else {
                     throw new LUsernameOrPasswordException();
+                }
             }
-        }
-    }
-
-    public function verifyPersistentLogin($cookieName, $cookiePassword) {
-        if(!$this->dal->findUserByUsername($cookieName))
-            throw new LWrongCookieInformation();
-
-        else {
-            $user = $this->dal->findUserByUsername($cookieName);
-            if(base64_encode($user->getPassword()) == $cookiePassword) {
-                if(!isset($_SESSION[self::$loggedIn]))
-                    $_SESSION[self::$loggedIn] = true;
-                return true;
-            }
-            else
-                throw new LWrongCookieInformationException();
         }
     }
 
     /**
-    * Logout user, destroy session
-    */
+     * Verifies login data stored in cookies.
+     * 
+     * @param  String $cookieName        Username stored in cookie.
+     * @param  String $cookiePassword    Password stored in cookie.
+     *
+     * @throws LWrongCookieInformationException  When user does not exist in database, or if user exist 
+     *                                           but password does not match.
+     */
+    public function verifyPersistentLogin($cookieName, $cookiePassword) {
+        if(!$this->dal->findUserByUsername($cookieName)) {
+            throw new LWrongCookieInformationException();
+        }
+        else {
+            $user = $this->dal->findUserByUsername($cookieName);
+            if(base64_encode($user->getPassword()) == $cookiePassword) {
+                if(!isset($_SESSION[self::$loggedIn])) {
+                    $_SESSION[self::$loggedIn] = true;
+                }
+            }
+            else {
+                throw new LWrongCookieInformationException();
+            }
+        }
+    }
+
+    /**
+     * Logout user.
+     */
     public function logout() {
-        if(isset($_SESSION[self::$loggedIn]))
-            if($_SESSION[self::$loggedIn])
+        if(isset($_SESSION[self::$loggedIn])) {
+            if($_SESSION[self::$loggedIn]) {
                 $_SESSION[self::$loggedIn] = false;
+            }
+        }
         session_destroy();
     }
 
     /**
-    * Login user, set session = true
-    */
+     * Check if user is logged in.
+     * 
+     * @return boolean
+     */
     public function isLoggedIn() {
-        if(isset($_SESSION[self::$loggedIn]))
-            if($_SESSION[self::$loggedIn])
+        if(isset($_SESSION[self::$loggedIn])) {
+            if($_SESSION[self::$loggedIn]) {
                 return true;
+            }
+        }
         return false;
     }
     

@@ -4,6 +4,7 @@
 require_once('model/LoginModel.php');
 require_once('model/RegisterModel.php');
 require_once('model/UserDAL.php');
+require_once('model/Database.php');
 
 require_once('view/LoginView.php');
 require_once('view/DateTimeView.php');
@@ -18,14 +19,9 @@ require_once('controller/MainController.php');
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 
-$mysqli = new mysqli("localhost", "root", "", "register");
-if(mysqli_connect_errno()) {
-	printf("Connect failed: %s\n", mysqli_connect_error());
-	exit;
-}
-
 //Create models
-$dal = new UserDAL($mysqli);
+$db = new Database();
+$dal = new UserDAL($db);
 $loginModel = new LoginModel($dal);
 $registerModel = new RegisterModel($dal);
 
@@ -35,9 +31,14 @@ $registerView = new RegisterView($registerModel);
 $dateTimeView = new DateTimeView();
 $layoutView = new LayoutView();
 
-//Create controller
-$loginController = new LoginController($layoutView, $loginView, $dateTimeView, $loginModel);
-$registerController = new RegisterController($layoutView, $registerView, $loginView, $dateTimeView, $registerModel);
-$mainController = new MainController($registerController, $loginController, $layoutView);
+//Create controllers
+$loginController = new LoginController($loginView, $loginModel);
+$registerController = new RegisterController($registerView, $loginView, $registerModel);
+$mainController = new MainController($registerController, $loginController);
 
 $mainController->listen();
+
+if($mainController->renderRegView())
+	$layoutView->render(false, $registerView, $dateTimeView);
+else
+	$layoutView->render($loginModel->isLoggedIn(), $loginView, $dateTimeView);

@@ -14,6 +14,7 @@ class LoginView implements iView {
 	private $rememberName = '';
 	private $logModel;
 	private $message = '';
+	private $register = "register";
 
 	/**
 	* Constructor
@@ -34,10 +35,12 @@ class LoginView implements iView {
 	public function response() {
 		$response = '';
 
-		if($this->logModel->isLoggedIn())
+		if($this->logModel->isLoggedIn()) {
 			$response = $this->generateLogoutButtonHTML($this->message);
-		else
+		}
+		else {
 			$response = $this->generateLoginFormHTML($this->message);
+		}
 		return $response;
 	}
 
@@ -82,79 +85,117 @@ class LoginView implements iView {
 		';
 	}
 
-	public function loginUser() {
-		$username = $_POST[self::$name];
-		$password = $_POST[self::$password];
-		$persistentLogin = isset($_POST[self::$keep]);
-		try {
-			$this->logModel->verifyLoginCredentials($username, $password, $persistentLogin);
-			if(!$persistentLogin)
-				$this->message = 'Welcome';
-			else
-				$this->message = 'Welcome and you will be remembered';
-		} catch(LUsernameMissingException $e) {
-			$this->message = 'Username is missing';
-		} catch(LPasswordMissingException $e) {
-			$this->message = 'Password is missing';
-		} catch(LUsernameOrPasswordException $e) {
-			$this->message = 'Wrong name or password';
-		}
+	/**
+	 * Generates the link for getting to the register form.
+	 * 
+	 * @return String HTML-code
+	 */
+	public function generateRegisterLink() {
+		return "<a href='?" . $this->register . "'>Register a new user</a>";
 	}
 
-	public function persistentLogin() {
-		$cookieName = $_COOKIE[self::$cookieName];
-		$cookiePassword = $_COOKIE[self::$cookiePassword];
-
-		try {
-			$this->logModel->verifyPersistentLogin($cookieName, $cookiePassword);
-			if(!$this->logModel->isLoggedIn()) {
-				$this->message = 'Wrong information in coolies';
-				$this->deleteCredentialCookies();
-			}
-			else
-				$this->message = 'Welcome back with cookie';
-		} catch(LWrongCookieInformationException $e) {
-			$this->deleteCredentialCookies();
-			$this->message = 'Wrong information in cookies';
-		}
+	/**
+	 * Check if register link has been pressed
+	 * 
+	 * @return boolean
+	 */
+	public function registerLinkPressed() {
+		return isset($_GET[$this->register]);
 	}
 
-	public function registrationMessage() {
-		$this->message = 'Registered new user.';
+	/**
+	 * Returns the username entered by the user.
+	 * 
+	 * @return String
+	 */
+	public function getUsername() {
+		return $_POST[self::$name];
 	}
 
+	/**
+	 * Returns the password entered by the user.
+	 * 
+	 * @return String
+	 */
+	public function getPassword() {
+		return $_POST[self::$password];
+	}
+
+	/**
+	 * Check if user wants to user the 'Keep me logged in' function.
+	 * 
+	 * @return boolean
+	 */
+	public function isSetPersistentLogin() {
+		return isset($_POST[self::$keep]);
+	}
+
+	/**
+	 * Returns the username stored in cookie.
+	 * 
+	 * @return String
+	 */
 	public function getCookieName() {
 		return $_COOKIE[self::$cookieName];
 	}
 
+	/**
+	 * Returns the password stored in cookie.
+	 * 
+	 * @return String
+	 */
 	public function getCookiePassword() {
 		return $_COOKIE[self::$cookiePassword];
 	}
 
+	/**
+	 * Check if cookies with login credentials are set
+	 * 
+	 * @return boolean
+	 */
 	public function isCookiesSet() {
-		if(isset($_COOKIE[self::$cookieName]) && isset($_COOKIE[self::$cookiePassword]))
+		if(isset($_COOKIE[self::$cookieName]) && isset($_COOKIE[self::$cookiePassword])) {
 			return true;
+		}
 		return false;
 	}
 
+	/**
+	 * Check if cookie with username stored is set.
+	 * Used for remembering username after successful registration.
+	 * 
+	 * @return boolean
+	 */
 	public function isCookieNameSet() {
 		return isset($_COOKIE[self::$cookieName]);
 	}
 
+	/**
+	 * Stores username in cookie.
+	 * Used for remembering username after successful registration.
+	 * 
+	 * @param String $username
+	 */
 	public function setCookieUsername($username) {
 		setcookie(self::$cookieName, $username, time()+3600);
 	}
 
+	/**
+	 * Sets username.
+	 * Used for remembering username after successful registration.
+	 * @param String $username
+	 */
 	public function setLoginName($username) {
 		$this->rememberName = $username;
 	}
 
 	/**
-	* Set cookies if requested
-	* Also for remembering username from login attempt
-	*
-	* @return boolean
-	*/
+	 * Check if login button has been pressed.
+	 * Set cookies if requested.
+	 * Also for remembering username from login attempt.
+	 *
+	 * @return boolean
+	 */
 	public function loginButtonPost() {
 		if(isset($_POST[self::$login])) {
 			$this->rememberName = $_POST[self::$name];
@@ -166,10 +207,69 @@ class LoginView implements iView {
 		}
 		return false;
 	}
+	
+	/**
+	 * Set message.
+	 */
+	public function setMsgWelcome() {
+		$this->message = 'Welcome';
+	}
 
 	/**
-	* @return boolean
-	*/
+	 * Set message.
+	 */
+	public function setMsgWelcomeAndRemembered() {
+		$this->message = 'Welcome and you will be remembered';
+	}
+
+	/**
+	 * Set message.
+	 */
+	public function setMsgRegistered() {
+		$this->message = 'Registered new user.';
+	}
+
+	/**
+	 * Set message.
+	 */
+	public function setMsgUsernameMissing() {
+		$this->message = 'Username is missing';
+	}
+
+	/**
+	 * Set message.
+	 */
+	public function setMsgPasswordMissing() {
+		$this->message = 'Password is missing';
+	}
+
+	/**
+	 * Set message.
+	 */
+	public function setMsgUsernameOrPassword() {
+		$this->message = 'Wrong name or password';
+	}
+
+	/**
+	 * Set message.
+	 */
+	public function setMsgWelcomeWithCookies() {
+		$this->message = 'Welcome back with cookie';
+	}
+
+	/**
+	 * Set message.
+	 */
+	public function setMsgWrongCookieInfo() {
+		$this->message = 'Wrong information in cookies';
+	}
+	
+	/**
+	 * Check if logout button has been pressed.
+	 * Set message if it has.
+	 * 
+	 * @return boolean
+	 */
 	public function logoutButtonPost() {
 		if(isset($_POST[self::$logout])) {
 			$this->message = 'Bye bye!';
@@ -178,19 +278,34 @@ class LoginView implements iView {
 		return false;
 	}
 
+	/**
+	 * Check if has been set after successfull registration.
+	 * Used for remembering username after successful registration.
+	 * 
+	 * @return boolean
+	 */
 	public function isRegisteredCookieSet() {
 		return isset($_COOKIE[RegisterView::$successfulRegister]);
 	}
 
+	/**
+	 * Delete cookie set after successfull registration.
+	 * Used for remembering username after successful registration.
+	 */
 	public function deleteRegisteredCookie() {
 		setcookie(RegisterView::$successfulRegister, "", time()-3600);
 	}
 
+	/**
+	 * Deletes cookies containing login credentials.
+	 */
 	public function deleteCredentialCookies() {
-		if(isset($_COOKIE[self::$cookieName]))
+		if(isset($_COOKIE[self::$cookieName])) {
 			setcookie(self::$cookieName, "", time()-3600);
-		if(isset($_COOKIE[self::$cookiePassword]))
+		}
+		if(isset($_COOKIE[self::$cookiePassword])) {
 			setcookie(self::$cookiePassword, "", time()-3600);
+		}
 		$this->rememberName = '';
 	}
 }
