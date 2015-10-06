@@ -22,7 +22,7 @@ class LoginModel {
 
     /**
     * Constructor
-    * @param \model\UserDAL $userList
+    * @param \model\UserDAL $userDAL
     */
     public function __construct(UserDAL $userDAL) {
         $this->dal = $userDAL;
