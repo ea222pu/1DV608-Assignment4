@@ -81,7 +81,7 @@ class RegisterView implements iView {
                     <input type="password" id="' . self::$password . '" name="' . self::$password . '" />
                     <br>
                     <label for="' . self::$passwordRepeat . '">Repeat password :</label>
-                    <input type="password" id="' . self::$passwordRepeat . '" name="' . self::$passwordRepeat . '"</>
+                    <input type="password" id="' . self::$passwordRepeat . '" name="' . self::$passwordRepeat . '" />
                     <br>
                     <input type="submit" name="' . self::$register . '" value="Register"/>
                 </fieldset>

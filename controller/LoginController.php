@@ -57,9 +57,8 @@ class LoginController implements iController {
 			$this->logView->deleteCredentialCookies();
 		}
 
-		else if($_POST) {
-			header('Location: ' . $_SERVER['REQUEST_URI']);
-			exit;
+		else if($this->logView->isPost()) {
+			$this->logView->redirect();
 		}
 
 		else if($this->logView->isCookiesSet()) {

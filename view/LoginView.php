@@ -207,6 +207,23 @@ class LoginView implements iView {
 		}
 		return false;
 	}
+
+	/**
+	 * Check if user resends information.
+	 * 
+	 * @return boolean
+	 */
+	public function isPost() {
+		return $_POST;
+	}
+
+	/**
+	 * Used to repost page.
+	 */
+	public function redirect() {
+		header('Location: ' . $_SERVER['REQUEST_URI']);
+		exit;
+	}
 	
 	/**
 	 * Set message.
